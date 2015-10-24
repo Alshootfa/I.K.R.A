@@ -1,0 +1,13 @@
+<!doctype html>
+<title>Courses</title>
+<h1>List of all courses</h1>
+
+{% for c in courses %}
+<div>
+    <b>{{ c.course_name }}</b>
+    <ul>
+    	<li>description: {{ c.description }}</li>
+        <li>icon: {{ c.icon }}</li>
+    </ul>
+</div>
+{% endfor %}

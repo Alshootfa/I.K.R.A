@@ -1,0 +1,14 @@
+<!doctype html>
+<title>Media</title>
+<h1>List of all media</h1>
+
+{% for m in media %}
+<div>
+    <b>{{ m.name }}</b>
+    <ul>
+    	<li>course_id: {{ m.course_id }}</li>
+        <li>location: {{ m.location }}</li>
+        <li>filetype: {{ m.filetype }}</li>
+    </ul>
+</div>
+{% endfor %}
