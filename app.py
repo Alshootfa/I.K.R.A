@@ -17,6 +17,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 with app.app_context():
     db.init_app(app)
+    db.drop_all()
+    db.create_all()
+
+    # sample data
+    sample_courses = [
+        Course('basic math', 'how to add and stuff', 'basic.png'),
+        Course('algebra', 'algebra and stuff', 'algebra.png')
+    ]
+    for course in sample_courses:
+        db.session.add(course)
+    db.session.commit()
 
 @app.route("/")
 def home():
@@ -88,23 +99,3 @@ def is_allowed_file(filename):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
-
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-
-        # sample data
-        sample_courses = [
-            Course('basic math', 'how to add and stuff', 'basic.png'),
-            Course('algebra', 'algebra and stuff', 'algebra.png')
-        ]
-        for course in sample_courses:
-            db.session.add(course)
-        db.session.commit()
-        
-        upload_media(1, open('samples/adding_pt1.png'))
-        upload_media(1, open('samples/adding_pt2.png'))
-        upload_media(1, open('samples/adding_pt3.png'))
-        upload_media(2, open('samples/adding_pt1.png'))
-        upload_media(2, open('samples/adding_pt2.png'))
-        db.session.commit()
