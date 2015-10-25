@@ -7,17 +7,16 @@ import os
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4'])
 
+if not os.path.exists('data/media'):
+    os.makedirs('data/media')
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data/media'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 with app.app_context():
     db.init_app(app)
-    db.create_all()
-    db.session.commit()
 
 @app.route("/")
 def home():
@@ -36,54 +35,49 @@ def square(x):
 
 @app.route('/courses')
 def list_courses():
-	# course_name, description, icon
-    courses = [
-        Course('basic math', 'how to add and stuff', 'basic.png'),
-        Course('algebra', 'algebra and stuff', 'algebra.png')
-    ]
+    courses = Course.query.all()
     return render_template('list_courses.html', courses=courses)
 
 @app.route('/courses/<course_id>/media/add', methods=['GET', 'POST'])
 def add_media(course_id):
     if request.method == 'POST':
-        name = request.form['name']
-        # file = request.files['file']
-        # if not file or not is_allowed_file(file.filename):
-        #     redirect('/media/add')
+        file = request.files['file']
+        if not file or not is_allowed_file(file.filename):
+            redirect('/courses/<course_id>/media/add', course_id=course_id)
 
-        # course_dir = os.path.join(app.config['UPLOAD_FOLDER'], 
+        upload_media(course_id, file)
+        return redirect(url_for('get_course', course_id=course_id))
 
-        # filename = secure_filename(file.filename)
-        # new_media = Media(-1, request.form['name'], -1, None, get_file_extension(filename)) 
+    course = Course.query.filter_by(ID=course_id).first()
+    return render_template('add_media.html', course=course)
 
-        # new_media.location = os.path.join(new_media.name, filename)
-        # upload_path = os.path.join(app.config['UPLOAD_FOLDER'], new_media.location)
-        # try:
-        #     os.makedirs(upload_path)
-        # except IOError:
-        #     pass
-        # file.save(upload_path)
+def get_courses_dir(course_id):
+    result = os.path.join('courses', course_id)
+    try:
+        os.makedirs(result)
+    except OSError:
+        pass
+    return result
 
-        # db.session.add(new_media)
-        # db.session.commit()
-        return redirect(url_for('get_media', name=name))
+@app.route('/courses/<course_id>')
+def get_course(course_id):
+    course = Course.query.filter_by(ID=course_id).first()
+    media = Media.query.filter_by(course_id=course_id)
+    return render_template('course.html', course=course, media=media)
 
-    return render_template('add_media.html')
-
-@app.route('/media')
-def list_media():
-    # media = Media.query.all()
-    media = [
-        Media(123, 'how to add part 1', 242, '/courses/123/adding_pt1.mp4', 'mp4'),
-        Media(123, 'how to add part 2', 243, '/courses/123/adding_pt2.mp4', 'mp4'),
-        Media(123, 'how to add part 3', 244, '/courses/123/adding_pt3.mp4', 'mp4')
-    ]
-    return render_template('list_media.html', media=media)
-
-@app.route('/media/<name>')
-def get_media(name):    
-    media = Media.query.filter_by(name=name).first()
+@app.route('/courses/<course_id>/media/<name>')
+def get_media(course_id, name):
+    media = Media.query.filter_by(course_id=course_id, name=name).first()
     return send_from_directory(app.config['UPLOAD_FOLDER'], media.location)
+
+def upload_media(course_id, file):
+    filename = secure_filename(file.filename)
+    new_media = Media(course_id, filename, -1, None, get_file_extension(filename))
+    new_media.location = os.path.join(get_courses_dir(course_id), filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_media.location))
+
+    db.session.add(new_media)
+    db.session.commit()
 
 def get_file_extension(filename):
     return filename.rsplit('.', 1)[1]
@@ -94,3 +88,21 @@ def is_allowed_file(filename):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
+
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+        # sample data
+        sample_courses = [
+            Course('basic math', 'how to add and stuff', 'basic.png'),
+            Course('algebra', 'algebra and stuff', 'algebra.png')
+        ]
+        for course in sample_courses:
+            db.session.add(course)
+        upload_media(1, open('samples/adding_pt1.png'))
+        upload_media(1, open('samples/adding_pt2.png'))
+        upload_media(1, open('samples/adding_pt3.png'))
+        upload_media(2, open('samples/adding_pt1.png'))
+        upload_media(2, open('samples/adding_pt2.png'))
+        db.session.commit()

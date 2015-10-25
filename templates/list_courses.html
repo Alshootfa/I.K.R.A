@@ -4,9 +4,9 @@
 
 {% for c in courses %}
 <div>
-    <b>{{ c.course_name }}</b>
+    <b><a href="{{ url_for('get_course', course_id=c.ID) }}">{{ c.course_name }}</a></b>
     <ul>
-    	<li>description: {{ c.description }}</li>
+        <li>description: {{ c.description }}</li>
         <li>icon: {{ c.icon }}</li>
     </ul>
 </div>

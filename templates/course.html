@@ -1,0 +1,18 @@
+<!doctype html>
+<title>Course</title>
+<h1>Course: {{ course.course_name }}</h1>
+
+<h3>Media</h3>
+<p>
+    <a href="{{ url_for('add_media', course_id=course.ID ) }}">Add</a>
+</p>
+{% for m in media %}
+<div>
+    <b><a href="{{ url_for('get_media', course_id=course.ID, name=m.name) }}">{{ m.name }}</a></b>
+    <ul>
+    	<li>course_id: {{ m.course_id }}</li>
+        <li>location: {{ m.location }}</li>
+        <li>filetype: {{ m.filetype }}</li>
+    </ul>
+</div>
+{% endfor %}
