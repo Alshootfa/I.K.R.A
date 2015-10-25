@@ -100,6 +100,8 @@ if __name__ == "__main__":
         ]
         for course in sample_courses:
             db.session.add(course)
+        db.session.commit()
+        
         upload_media(1, open('samples/adding_pt1.png'))
         upload_media(1, open('samples/adding_pt2.png'))
         upload_media(1, open('samples/adding_pt3.png'))
