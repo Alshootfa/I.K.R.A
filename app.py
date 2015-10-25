@@ -31,18 +31,7 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return render_template('index.html')
-
-@app.route("/math/square/<value>")
-def show_math(value):
-
-    value = square(value)
-
-    return render_template('math.html', value=value)
-
-def square(x):
-    square = int(x) * int(x)
-    return square
+    return redirect('/courses')
 
 @app.route('/courses')
 def list_courses():
