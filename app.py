@@ -22,8 +22,9 @@ with app.app_context():
 
     # sample data
     sample_courses = [
-        Course('basic math', 'how to add and stuff', 'basic.png'),
-        Course('algebra', 'algebra and stuff', 'algebra.png')
+        Course('chemistry', 'This is a thing that has to do with chemistry', 'chemistry.png'),
+        Course('physics', 'This is a thing that has to do with physics', 'physics.png'),
+        Course('programming', 'This is a thing that has to do with programming', 'programming.png'),
     ]
     for course in sample_courses:
         db.session.add(course)
